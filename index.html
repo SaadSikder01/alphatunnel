@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlphaTunnel — Expose localhost in seconds</title>
+  <meta name="description" content="Secure localhost tunneling for developers and embedded devices." />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50:  '#eef6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .glow { box-shadow: 0 0 40px -10px rgba(99, 102, 241, 0.5); }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid currentColor; border-right-color: transparent;
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased">
+
+  <!-- ============ Loading Screen ============ -->
+  <div id="loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 gap-4">
+    <div class="w-12 h-12 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></div>
+    <p class="text-slate-400 text-sm">Loading AlphaTunnel...</p>
+  </div>
+
+  <!-- ============ Toast Container ============ -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+  <!-- ================================================== -->
+  <!-- ============ AUTH VIEW (Signup / Login) ============ -->
+  <!-- ================================================== -->
+  <div id="auth-view" class="hidden min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="p-6 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center font-bold text-white">A</div>
+        <span class="text-xl font-bold tracking-tight">Alpha<span class="gradient-text">Tunnel</span></span>
+      </div>
+      <a href="#" onclick="scrollToId('auth-form-container'); return false;" class="text-sm text-slate-400 hover:text-white transition">Get Started →</a>
+    </header>
+
+    <!-- Hero -->
+    <main class="flex-1 flex items-center justify-center px-4 py-10">
+      <div class="max-w-5xl w-full grid lg:grid-cols-2 gap-10 items-center">
+
+        <!-- Left: Hero text -->
+        <div class="fade-in">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-300 text-xs font-medium mb-6">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Self-hosted · Free forever tier
+          </div>
+          <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4">
+            Expose your <span class="gradient-text">localhost</span> to the world in <span class="gradient-text">30 seconds</span>.
+          </h1>
+          <p class="text-slate-400 text-lg mb-8">
+            One command. No port forwarding. No router config. Works on Windows, Linux, Termux, and even <span class="text-slate-200 font-medium">ESP32 / Raspberry Pi Pico</span>.
+          </p>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 font-mono text-sm text-slate-300 mb-6">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-3 h-3 rounded-full bg-red-500/70"></span>
+              <span class="w-3 h-3 rounded-full bg-yellow-500/70"></span>
+              <span class="w-3 h-3 rounded-full bg-green-500/70"></span>
+            </div>
+            <div><span class="text-emerald-400">$</span> alphatunnel release <span class="text-amber-300">8000</span></div>
+            <div class="text-slate-500">→ Username: <span class="text-slate-300">your_username</span></div>
+            <div class="text-slate-500">→ Password: <span class="text-slate-300">••••••••</span></div>
+            <div class="text-slate-500">→ Token: <span class="text-slate-300">a1b2c3d4...</span></div>
+            <div class="text-emerald-400 mt-2">✓ Live → https://your_username.alphatunnel.app</div>
+          </div>
+        </div>
+
+        <!-- Right: Auth form -->
+        <div id="auth-form-container" class="fade-in">
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 md:p-8 glow">
+
+            <!-- Tabs -->
+            <div class="flex bg-slate-950/60 rounded-lg p-1 mb-6">
+              <button id="tab-signup" onclick="switchAuthTab('signup')" class="flex-1 py-2 text-sm font-semibold rounded-md transition">Sign Up</button>
+              <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-semibold rounded-md transition">Log In</button>
+            </div>
+
+            <!-- Signup form -->
+            <form id="signup-form" class="hidden space-y-4">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="relative">
+                  <img id="signup-avatar-preview" src="" alt="" class="w-16 h-16 rounded-full object-cover bg-slate-800 border-2 border-slate-700 hidden" />
+                  <div id="signup-avatar-initials" class="w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-xl font-bold text-white">?</div>
+                  <label class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-brand-600 hover:bg-brand-500 flex items-center justify-center cursor-pointer border-2 border-slate-900">
+                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <input id="signup-avatar-input" type="file" accept="image/*" class="hidden" onchange="handleAvatarSelect(event)" />
+                  </label>
+                </div>
+                <div class="text-sm text-slate-400">
+                  <p class="font-medium text-slate-200">Profile Picture</p>
+                  <p class="text-xs">Optional · JPG/PNG · Max 2MB</p>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-slate-400 mb-1 block">Username *</label>
+                <input id="signup-username" type="text" required minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+"
+                  placeholder="e.g. rakib_dev" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition" />
+                <p id="username-status" class="text-xs mt-1 hidden"></p>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-slate-400 mb-1 block">Full Name</label>
+                <input id="signup-fullname" type="text" placeholder="Rakibul Hasan"
+                  class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition" />
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-slate-400 mb-1 block">Email *</label>
+                <input id="signup-email" type="email" required placeholder="you@example.com"
+                  class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition" />
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-slate-400 mb-1 block">Password *</label>
+                <input id="signup-password" type="password" required minlength="6" placeholder="At least 6 characters"
+                  class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs font-semibold text-slate-400 mb-1 block">Purpose</label>
+                  <select id="signup-purpose" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition">
+                    <option value="personal">Personal</option>
+                    <option value="professional">Professional</option>
+                    <option value="learning">Learning</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-slate-400 mb-1 block">I'm a</label>
+                  <select id="signup-develtype" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition">
+                    <option value="frontend">Frontend Dev</option>
+                    <option value="backend">Backend Dev</option>
+                    <option value="fullstack">Full Stack Dev</option>
+                    <option value="embedded">Embedded Dev</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 gap-3">
+                <div>
+                  <label class="text-xs font-semibold text-slate-400 mb-1 block">Bio <span class="text-slate-600">(optional)</span></label>
+                  <input id="signup-bio" type="text" maxlength="120" placeholder="Short tagline"
+                    class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition" />
+                </div>
+              </div>
+
+              <div id="signup-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-lg px-3 py-2"></div>
+
+              <button type="submit" id="signup-submit"
+                class="w-full bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed">
+                Create Account
+              </button>
+              <p class="text-xs text-slate-500 text-center">By signing up you agree to our Terms & Privacy Policy.</p>
+            </form>
+
+            <!-- Login form -->
+            <form id="login-form" class="hidden space-y-4">
+              <div>
+                <label class="text-xs font-semibold text-slate-400 mb-1 block">Email *</label>
+                <input id="login-email" type="email" required placeholder="you@example.com"
+                  class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition" />
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-400 mb-1 block">Password *</label>
+                <input id="login-password" type="password" required placeholder="Your password"
+                  class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm transition" />
+              </div>
+              <div id="login-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-lg px-3 py-2"></div>
+              <button type="submit" id="login-submit"
+                class="w-full bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed">
+                Log In
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="p-6 text-center text-xs text-slate-600">
+      © 2026 AlphaTunnel. Built with ❤️ for developers.
+    </footer>
+  </div>
+
+  <!-- ================================================== -->
+  <!-- ================= DASHBOARD VIEW ================== -->
+  <!-- ================================================== -->
+  <div id="dashboard-view" class="hidden min-h-screen">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-40 glass border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center font-bold text-white text-sm">A</div>
+          <span class="text-lg font-bold hidden sm:inline">Alpha<span class="gradient-text">Tunnel</span></span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <p id="topbar-username" class="text-sm font-semibold">—</p>
+            <p id="topbar-email" class="text-xs text-slate-400">—</p>
+          </div>
+          <img id="topbar-avatar" src="" alt="" class="w-9 h-9 rounded-full bg-slate-800 object-cover" />
+          <button onclick="handleLogout()" class="text-sm text-slate-400 hover:text-red-400 transition px-3 py-1.5 rounded-lg border border-slate-800 hover:border-red-500/40">
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
+
+      <!-- Welcome Banner -->
+      <div class="fade-in bg-gradient-to-br from-brand-600/20 via-slate-900 to-purple-600/20 border border-slate-800 rounded-2xl p-6 md:p-8">
+        <h1 class="text-2xl md:text-3xl font-bold mb-1">Welcome back, <span id="welcome-name" class="gradient-text">—</span> 👋</h1>
+        <p class="text-slate-400 text-sm">Your tunnel is one command away. Generate a fresh token below and get started.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-6">
+
+        <!-- LEFT COLUMN: Profile + Token -->
+        <div class="lg:col-span-1 space-y-6">
+
+          <!-- Profile Card -->
+          <div class="fade-in bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+            <div class="flex items-center gap-4 mb-4">
+              <img id="profile-avatar" src="" alt="" class="w-16 h-16 rounded-full bg-slate-800 object-cover border-2 border-slate-700" />
+              <div class="min-w-0">
+                <h3 id="profile-username" class="font-bold text-lg truncate">—</h3>
+                <p id="profile-fullname" class="text-sm text-slate-400 truncate">—</p>
+              </div>
+            </div>
+            <p id="profile-bio" class="text-sm text-slate-400 mb-4">—</p>
+
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500">Email</span>
+                <span id="profile-email" class="text-slate-300 truncate ml-2 text-right">—</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500">Purpose</span>
+                <span id="profile-purpose" class="text-slate-300 capitalize">—</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500">Developer</span>
+                <span id="profile-develtype" class="text-slate-300 capitalize">—</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500">Member since</span>
+                <span id="profile-created" class="text-slate-300">—</span>
+              </div>
+            </div>
+
+            <button onclick="openEditProfile()" class="w-full text-sm font-medium py-2 rounded-lg border border-slate-700 hover:border-brand-500 hover:text-brand-400 transition">
+              Edit Profile
+            </button>
+          </div>
+
+          <!-- Token Card -->
+          <div class="fade-in bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-lg">🔑 Tunnel Token</h3>
+              <span id="token-status-badge" class="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-400">—</span>
+            </div>
+
+            <div id="token-empty" class="text-center py-4">
+              <p class="text-sm text-slate-400 mb-4">You don't have an active token. Generate one to start your tunnel.</p>
+              <button onclick="generateToken()" class="w-full bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-semibold py-2.5 rounded-lg transition">
+                Generate Token
+              </button>
+            </div>
+
+            <div id="token-active" class="hidden">
+              <p class="text-xs text-slate-400 mb-2">Your current token (kept private):</p>
+              <div class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs break-all text-brand-300 mb-3" id="token-display">—</div>
+
+              <div class="flex items-center justify-between text-sm mb-4">
+                <span class="text-slate-500">Expires in</span>
+                <span id="token-countdown" class="font-mono font-semibold text-amber-400">--:--:--</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="copyToken()" class="text-sm font-medium py-2 rounded-lg border border-slate-700 hover:border-emerald-500 hover:text-emerald-400 transition">
+                  📋 Copy
+                </button>
+                <button onclick="generateToken(true)" class="text-sm font-medium py-2 rounded-lg border border-slate-700 hover:border-amber-500 hover:text-amber-400 transition">
+                  🔄 Refresh
+                </button>
+              </div>
+              <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                ⚠️ Token auto-rotates every <strong>2 hours</strong>. Never share it publicly — anyone with your username+token+password can access your tunnel.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Setup Guide -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Tabs -->
+          <div class="fade-in bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="flex border-b border-slate-800">
+              <button onclick="switchSetupTab('cli')" id="tab-cli" class="flex-1 px-4 py-3 text-sm font-semibold border-b-2 transition">💻 PC / Termux (CLI)</button>
+              <button onclick="switchSetupTab('esp32')" id="tab-esp32" class="flex-1 px-4 py-3 text-sm font-semibold border-b-2 transition">🔌 ESP32 / Pico</button>
+              <button onclick="switchSetupTab('manual')" id="tab-manual" class="flex-1 px-4 py-3 text-sm font-semibold border-b-2 transition">📖 Manual</button>
+            </div>
+
+            <!-- CLI Setup -->
+            <div id="setup-cli" class="p-6 space-y-5">
+              <div>
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">1</span>
+                  Install the CLI
+                </h4>
+                <p class="text-sm text-slate-400 mb-2">One command — no compilation needed.</p>
+                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>git clone https://github.com/alphatunnel/cli.git
+cd cli && ./install.sh</code></pre>
+                <p class="text-xs text-slate-500 mt-1">Windows: use <code class="text-slate-300">install.ps1</code></p>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">2</span>
+                  Start your local server
+                </h4>
+                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code># Python example (port 8000)
+python -m http.server 8000
+
+# Node example
+npx serve -l 8000</code></pre>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">3</span>
+                  Open the tunnel
+                </h4>
+                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>alphatunnel release <span class="text-amber-300">8000</span></code></pre>
+                <p class="text-xs text-slate-500 mt-1">It will prompt for your username, password, and token.</p>
+              </div>
+
+              <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
+                <p class="text-xs text-emerald-300">✓ Once connected, your local server will be publicly available at <code class="font-mono">https://your-username.alphatunnel.app</code></p>
+              </div>
+            </div>
+
+            <!-- ESP32 Setup -->
+            <div id="setup-esp32" class="p-6 space-y-5 hidden">
+              <div class="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3 mb-2">
+                <p class="text-xs text-amber-300">⚠️ ESP32 / RP2040 support is coming in v1.0. Below is the intended workflow.</p>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">1</span>
+                  Install Arduino library
+                </h4>
+                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>// Arduino IDE → Library Manager
+Search: "AlphaTunnel"
+Install: v1.0.0
+
+// Or via .zip
+https://github.com/alphatunnel/esp32/releases</code></pre>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">2</span>
+                  Configure device
+                </h4>
+                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>#define WIFI_SSID     "your_wifi"
+#define WIFI_PASSWORD "your_wifi_password"
+
+#define ALPHA_USERNAME "your_username"
+#define ALPHA_PASSWORD "your_password"
+#define ALPHA_TOKEN    "your_token_here"</code></pre>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">3</span>
+                  Upload & run
+                </h4>
+                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>#include &lt;AlphaTunnel.h&gt;
+
+void setup() {
+  Serial.begin(115200);
+  AlphaTunnel.begin(WIFI_SSID, WIFI_PASSWORD,
+                    ALPHA_USERNAME, ALPHA_PASSWORD, ALPHA_TOKEN);
+  AlphaTunnel.startLocalServer(80);
+}
+
+void loop() {
+  AlphaTunnel.loop();
+}</code></pre>
+              </div>
+            </div>
+
+            <!-- Manual Setup -->
+            <div id="setup-manual" class="p-6 space-y-5 hidden">
+              <div>
+                <h4 class="font-semibold mb-2">Protocol Overview</h4>
+                <p class="text-sm text-slate-400 mb-3">AlphaTunnel uses a persistent WebSocket to a relay server. All traffic is encrypted via WSS. Authentication is a 3-part handshake:</p>
+                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>1. Client → Relay: {username, token, "auth-request"}
+2. Relay → Client: {ok: true, public_url}
+3. Relay ↔ Client: bidirectional HTTP/WS frames</code></pre>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-2">Endpoints</h4>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between p-2 rounded bg-slate-950 border border-slate-800">
+                    <span class="text-slate-500">Relay</span>
+                    <code class="text-brand-300 font-mono text-xs">wss://relay.alphatunnel.app</code>
+                  </div>
+                  <div class="flex justify-between p-2 rounded bg-slate-950 border border-slate-800">
+                    <span class="text-slate-500">Auth</span>
+                    <code class="text-brand-300 font-mono text-xs">POST /auth</code>
+                  </div>
+                  <div class="flex justify-between p-2 rounded bg-slate-950 border border-slate-800">
+                    <span class="text-slate-500">Token verify</span>
+                    <code class="text-brand-300 font-mono text-xs">verify_tunnel_token()</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3">
+                <p class="text-xs text-blue-300">💡 Full protocol spec: <code class="font-mono">github.com/alphatunnel/spec</code></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Reference -->
+          <div class="fade-in bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+            <h3 class="font-bold text-lg mb-4">⚡ Quick Reference</h3>
+            <div class="grid md:grid-cols-2 gap-3 text-sm">
+              <div class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">✓</span>
+                <div><strong class="text-slate-200">Token rotates</strong> every 2 hours automatically</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">✓</span>
+                <div><strong class="text-slate-200">One active token</strong> per user (regenerating invalidates the old one)</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">✓</span>
+                <div><strong class="text-slate-200">WSS encrypted</strong> end-to-end from your device to the relay</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">✓</span>
+                <div><strong class="text-slate-200">No port forwarding</strong> needed — outbound connection only</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ================================================== -->
+  <!-- ================ EDIT PROFILE MODAL =============== -->
+  <!-- ================================================== -->
+  <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 fade-in max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-lg">Edit Profile</h3>
+        <button onclick="closeEditProfile()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <form id="edit-form" class="space-y-4">
+        <div class="flex items-center gap-4">
+          <img id="edit-avatar-preview" src="" alt="" class="w-16 h-16 rounded-full bg-slate-800 object-cover" />
+          <label class="text-sm cursor-pointer text-brand-400 hover:text-brand-300">
+            Change photo
+            <input id="edit-avatar-input" type="file" accept="image/*" class="hidden" onchange="handleEditAvatarSelect(event)" />
+          </label>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-400 mb-1 block">Username</label>
+          <input id="edit-username" type="text" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+"
+            class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm" />
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-400 mb-1 block">Full Name</label>
+          <input id="edit-fullname" type="text"
+            class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-400 mb-1 block">Purpose</label>
+            <select id="edit-purpose" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm">
+              <option value="personal">Personal</option>
+              <option value="professional">Professional</option>
+              <option value="learning">Learning</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-400 mb-1 block">Developer</label>
+            <select id="edit-develtype" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm">
+              <option value="frontend">Frontend</option>
+              <option value="backend">Backend</option>
+              <option value="fullstack">Full Stack</option>
+              <option value="embedded">Embedded</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-400 mb-1 block">Bio</label>
+          <input id="edit-bio" type="text" maxlength="120"
+            class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-brand-500 focus:outline-none text-sm" />
+        </div>
+
+        <div id="edit-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-lg px-3 py-2"></div>
+
+        <div class="flex gap-2">
+          <button type="button" onclick="closeEditProfile()" class="flex-1 py-2.5 rounded-lg border border-slate-700 text-sm font-medium hover:border-slate-500">Cancel</button>
+          <button type="submit" id="edit-submit" class="flex-1 bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-semibold py-2.5 rounded-lg transition text-sm disabled:opacity-60">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================== -->
+  <!-- ================== APP LOGIC ===================== -->
+  <!-- ================================================== -->
+  <script>
+    // ============ CONFIG ============
+    const SUPABASE_URL = 'https://kdtosbvjagvolahbruwa.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdG9zYnZqYWd2b2xhaGJydXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MTQ3MjMsImV4cCI6MjEwOTI5MDcyM30.j_FfIvRhPZktOqXaBOk5HZH8grsmTl31gePO3RO8k3Q';
+
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+
+    // ============ STATE ============
+    let currentUser = null;
+    let currentProfile = null;
+    let currentToken = null;
+    let tokenExpiresAt = null;
+    let tokenTickTimer = null;
+    let autoRotateTimer = null;
+    let selectedAvatarFile = null;
+    let selectedEditAvatarFile = null;
+
+    // ============ INIT ============
+    document.addEventListener('DOMContentLoaded', () => {
+      switchAuthTab('signup');
+      switchSetupTab('cli');
+
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user) {
+          currentUser = session.user;
+          await loadDashboard();
+        } else {
+          currentUser = null;
+          currentProfile = null;
+          showAuthView();
+        }
+        document.getElementById('loading-screen').classList.add('hidden');
+      });
+
+      supabase.auth.getSession().then(({ data }) => {
+        setTimeout(() => {
+          document.getElementById('loading-screen').classList.add('hidden');
+        }, 300);
+      });
+
+      // username availability
+      const unameInput = document.getElementById('signup-username');
+      let debounce;
+      unameInput.addEventListener('input', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => checkUsername(unameInput.value), 400);
+      });
+
+      document.getElementById('signup-form').addEventListener('submit', handleSignup);
+      document.getElementById('login-form').addEventListener('submit', handleLogin);
+      document.getElementById('edit-form').addEventListener('submit', handleEditSave);
+    });
+
+    // ============ TOAST ============
+    function toast(msg, type = 'info') {
+      const colors = {
+        info: 'bg-brand-500/20 border-brand-500/40 text-brand-200',
+        success: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200',
+        error: 'bg-red-500/20 border-red-500/40 text-red-200',
+        warn: 'bg-amber-500/20 border-amber-500/40 text-amber-200',
+      };
+      const el = document.createElement('div');
+      el.className = `fade-in px-4 py-3 rounded-lg border text-sm font-medium ${colors[type]}`;
+      el.textContent = msg;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; }, 3200);
+      setTimeout(() => el.remove(), 3600);
+    }
+
+    function scrollToId(id) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ============ VIEWS ============
+    function showAuthView() {
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('auth-view').classList.remove('hidden');
+      document.getElementById('loading-screen').classList.add('hidden');
+    }
+
+    function showDashboardView() {
+      document.getElementById('auth-view').classList.add('hidden');
+      document.getElementById('dashboard-view').classList.remove('hidden');
+    }
+
+    function switchAuthTab(tab) {
+      const signupBtn = document.getElementById('tab-signup');
+      const loginBtn = document.getElementById('tab-login');
+      const signupForm = document.getElementById('signup-form');
+      const loginForm = document.getElementById('login-form');
+
+      if (tab === 'signup') {
+        signupBtn.className = 'flex-1 py-2 text-sm font-semibold rounded-md transition bg-slate-800 text-white';
+        loginBtn.className = 'flex-1 py-2 text-sm font-semibold rounded-md transition text-slate-400 hover:text-white';
+        signupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      } else {
+        loginBtn.className = 'flex-1 py-2 text-sm font-semibold rounded-md transition bg-slate-800 text-white';
+        signupBtn.className = 'flex-1 py-2 text-sm font-semibold rounded-md transition text-slate-400 hover:text-white';
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+      }
+    }
+
+    function switchSetupTab(tab) {
+      ['cli', 'esp32', 'manual'].forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        const panel = document.getElementById('setup-' + t);
+        if (t === tab) {
+          btn.className = 'flex-1 px-4 py-3 text-sm font-semibold border-b-2 border-brand-500 text-brand-400 transition';
+          panel.classList.remove('hidden');
+        } else {
+          btn.className = 'flex-1 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition';
+          panel.classList.add('hidden');
+        }
+      });
+    }
+
+    // ============ USERNAME AVAILABILITY ============
+    async function checkUsername(username) {
+      const status = document.getElementById('username-status');
+      if (!username || username.length < 3) {
+        status.classList.add('hidden');
+        return;
+      }
+      const { data, error } = await supabase.rpc('username_available', { uname: username });
+      if (error) { console.error(error); return; }
+      status.classList.remove('hidden');
+      if (data) {
+        status.className = 'text-xs mt-1 text-emerald-400';
+        status.textContent = '✓ Username available';
+      } else {
+        status.className = 'text-xs mt-1 text-red-400';
+        status.textContent = '✗ Username already taken';
+      }
+    }
+
+    // ============ AVATAR PREVIEW ============
+    function handleAvatarSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        toast('Image must be under 2MB', 'error');
+        return;
+      }
+      selectedAvatarFile = file;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = document.getElementById('signup-avatar-preview');
+        img.src = ev.target.result;
+        img.classList.remove('hidden');
+        document.getElementById('signup-avatar-initials').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleEditAvatarSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        toast('Image must be under 2MB', 'error');
+        return;
+      }
+      selectedEditAvatarFile = file;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('edit-avatar-preview').src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ============ SIGNUP ============
+    async function handleSignup(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('signup-error');
+      errEl.classList.add('hidden');
+
+      const submitBtn = document.getElementById('signup-submit');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Creating account...';
+
+      const username = document.getElementById('signup-username').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const fullName = document.getElementById('signup-fullname').value.trim();
+      const purpose = document.getElementById('signup-purpose').value;
+      const devType = document.getElementById('signup-develtype').value;
+      const bio = document.getElementById('signup-bio').value.trim();
+
+      try {
+        // check username one more time
+        const { data: available } = await supabase.rpc('username_available', { uname: username });
+        if (!available) throw new Error('Username is already taken');
+
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              username,
+              full_name: fullName,
+              purpose,
+              developer_type: devType,
+              bio,
+            }
+          }
+        });
+        if (error) throw error;
+
+        // If session exists, upload avatar
+        if (data.session && selectedAvatarFile) {
+          await uploadAvatarFor(data.user.id, selectedAvatarFile);
+        }
+
+        if (!data.session) {
+          toast('Account created! Check your email to confirm.', 'success');
+          switchAuthTab('login');
+        } else {
+          toast('Welcome to AlphaTunnel!', 'success');
+        }
+      } catch (err) {
+        errEl.textContent = err.message || 'Signup failed';
+        errEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+      }
+    }
+
+    // ============ LOGIN ============
+    async function handleLogin(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('login-error');
+      errEl.classList.add('hidden');
+
+      const submitBtn = document.getElementById('login-submit');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Logging in...';
+
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast('Welcome back!', 'success');
+      } catch (err) {
+        errEl.textContent = err.message || 'Login failed';
+        errEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Log In';
+      }
+    }
+
+    // ============ LOGOUT ============
+    async function handleLogout() {
+      clearInterval(tokenTickTimer);
+      clearTimeout(autoRotateTimer);
+      await supabase.auth.signOut();
+      currentToken = null;
+      tokenExpiresAt = null;
+      selectedAvatarFile = null;
+      toast('Logged out', 'info');
+    }
+
+    // ============ DASHBOARD ============
+    async function loadDashboard() {
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+        if (error) throw error;
+        currentProfile = profile;
+
+        renderProfile();
+        showDashboardView();
+        await loadToken();
+      } catch (err) {
+        console.error(err);
+        toast('Failed to load profile: ' + err.message, 'error');
+      }
+    }
+
+    function renderProfile() {
+      const p = currentProfile;
+      const avatar = p.avatar_url ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username)}&background=6366f1&color=fff&size=128`;
+
+      document.getElementById('topbar-username').textContent = p.username;
+      document.getElementById('topbar-email').textContent = p.email || currentUser.email;
+      document.getElementById('topbar-avatar').src = avatar;
+
+      document.getElementById('welcome-name').textContent = p.full_name || p.username;
+
+      document.getElementById('profile-avatar').src = avatar;
+      document.getElementById('profile-username').textContent = '@' + p.username;
+      document.getElementById('profile-fullname').textContent = p.full_name || '—';
+      document.getElementById('profile-bio').textContent = p.bio || 'No bio yet.';
+      document.getElementById('profile-email').textContent = p.email || currentUser.email;
+      document.getElementById('profile-purpose').textContent = p.purpose || '—';
+      document.getElementById('profile-develtype').textContent = (p.developer_type || '—').replace('fullstack', 'Full Stack');
+      document.getElementById('profile-created').textContent = new Date(p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    // ============ TOKEN ============
+    async function loadToken() {
+      // Get existing active token
+      const { data, error } = await supabase
+        .from('tunnel_tokens')
+        .select('token, expires_at, is_active')
+        .eq('user_id', currentUser.id)
+        .eq('is_active', true)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) { console.error(error); return; }
+
+      if (data) {
+        currentToken = data.token;
+        tokenExpiresAt = new Date(data.expires_at);
+        renderTokenActive();
+      } else {
+        renderTokenEmpty();
+      }
+    }
+
+    async function generateToken(isRefresh = false) {
+      try {
+        const { data, error } = await supabase.rpc('generate_tunnel_token');
+        if (error) throw error;
+        if (!data || !data[0]) throw new Error('No token returned');
+
+        currentToken = data[0].token;
+        tokenExpiresAt = new Date(data[0].expires_at);
+        renderTokenActive();
+        toast(isRefresh ? 'Token refreshed' : 'Token generated', 'success');
+
+        // copy to clipboard automatically
+        navigator.clipboard?.writeText(currentToken).catch(() => {});
+      } catch (err) {
+        toast('Failed to generate token: ' + err.message, 'error');
+      }
+    }
+
+    function renderTokenEmpty() {
+      document.getElementById('token-empty').classList.remove('hidden');
+      document.getElementById('token-active').classList.add('hidden');
+      document.getElementById('token-status-badge').textContent = 'No token';
+      document.getElementById('token-status-badge').className = 'text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-400';
+      clearInterval(tokenTickTimer);
+    }
+
+    function renderTokenActive() {
+      document.getElementById('token-empty').classList.add('hidden');
+      document.getElementById('token-active').classList.remove('hidden');
+
+      const masked = currentToken.slice(0, 8) + '••••••••••••••••' + currentToken.slice(-8);
+      document.getElementById('token-display').textContent = masked;
+
+      document.getElementById('token-status-badge').textContent = '● Active';
+      document.getElementById('token-status-badge').className = 'text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400';
+
+      clearInterval(tokenTickTimer);
+      clearTimeout(autoRotateTimer);
+      tickCountdown();
+      tokenTickTimer = setInterval(tickCountdown, 1000);
+    }
+
+    function tickCountdown() {
+      if (!tokenExpiresAt) return;
+      const now = Date.now();
+      const diff = tokenExpiresAt.getTime() - now;
+
+      if (diff <= 0) {
+        document.getElementById('token-countdown').textContent = '00:00:00';
+        clearInterval(tokenTickTimer);
+        // auto rotate
+        autoRotateTimer = setTimeout(() => generateToken(true), 1500);
+        return;
+      }
+
+      const totalSec = Math.floor(diff / 1000);
+      const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+      const s = String(totalSec % 60).padStart(2, '0');
+      document.getElementById('token-countdown').textContent = `${h}:${m}:${s}`;
+    }
+
+    function copyToken() {
+      if (!currentToken) return;
+      navigator.clipboard.writeText(currentToken).then(() => toast('Token copied to clipboard', 'success'))
+        .catch(() => toast('Copy failed — select manually', 'error'));
+    }
+
+    // ============ EDIT PROFILE ============
+    function openEditProfile() {
+      const p = currentProfile;
+      selectedEditAvatarFile = null;
+      document.getElementById('edit-avatar-preview').src = p.avatar_url ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username)}&background=6366f1&color=fff&size=128`;
+      document.getElementById('edit-username').value = p.username || '';
+      document.getElementById('edit-fullname').value = p.full_name || '';
+      document.getElementById('edit-purpose').value = p.purpose || 'personal';
+      document.getElementById('edit-develtype').value = p.developer_type || 'other';
+      document.getElementById('edit-bio').value = p.bio || '';
+      document.getElementById('edit-error').classList.add('hidden');
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditProfile() {
+      document.getElementById('edit-modal').classList.add('hidden');
+      selectedEditAvatarFile = null;
+    }
+
+    async function handleEditSave(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('edit-error');
+      errEl.classList.add('hidden');
+      const submitBtn = document.getElementById('edit-submit');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+
+      try {
+        const newUsername = document.getElementById('edit-username').value.trim();
+        const fullName = document.getElementById('edit-fullname').value.trim();
+        const purpose = document.getElementById('edit-purpose').value;
+        const devType = document.getElementById('edit-develtype').value;
+        const bio = document.getElementById('edit-bio').value.trim();
+
+        // username change check
+        if (newUsername !== currentProfile.username) {
+          const { data: available } = await supabase.rpc('username_available', { uname: newUsername });
+          if (!available) throw new Error('Username already taken');
+        }
+
+        let avatarUrl = currentProfile.avatar_url;
+        if (selectedEditAvatarFile) {
+          avatarUrl = await uploadAvatarFor(currentUser.id, selectedEditAvatarFile);
+        }
+
+        const updates = {
+          username: newUsername,
+          full_name: fullName,
+          purpose,
+          developer_type: devType,
+          bio,
+          avatar_url: avatarUrl,
+        };
+
+        const { error } = await supabase.from('profiles').update(updates).eq('id', currentUser.id);
+        if (error) throw error;
+
+        Object.assign(currentProfile, updates);
+        renderProfile();
+        closeEditProfile();
+        toast('Profile updated', 'success');
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save';
+      }
+    }
+
+    // ============ AVATAR UPLOAD ============
+    async function uploadAvatarFor(userId, file) {
+      const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+      const path = `${userId}/avatar.${ext}`;
+      const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+        cacheControl: '3600'
+      });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+      // append cache buster so new upload reflects immediately
+      return `${publicUrl}?t=${Date.now()}`;
+    }
+  </script>
+</body>
+</html>
