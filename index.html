@@ -358,42 +358,106 @@
               <button onclick="switchSetupTab('manual')" id="tab-manual" class="flex-1 px-4 py-3 text-sm font-semibold border-b-2 transition">📖 Manual</button>
             </div>
 
-            <!-- CLI Setup -->
-            <div id="setup-cli" class="p-6 space-y-5">
+            <!-- CLI Setup (UPDATED & CLEANED) -->
+            <div id="setup-cli" class="p-6 space-y-6">
+              <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 mb-2">
+                <p class="text-sm text-emerald-300">✅ <strong>New:</strong> AlphaTunnel now runs on Cloudflare Workers. 100% Free. No Cold Starts. No Disconnections.</p>
+              </div>
+
+              <!-- Step 1: Install -->
               <div>
-                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                <h4 class="font-semibold mb-3 flex items-center gap-2 text-lg">
                   <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">1</span>
                   Install the CLI
                 </h4>
-                <p class="text-sm text-slate-400 mb-2">One command — no compilation needed.</p>
-                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>git clone https://github.com/alphatunnel/cli.git
-cd cli && ./install.sh</code></pre>
-                <p class="text-xs text-slate-500 mt-1">Windows: use <code class="text-slate-300">install.ps1</code></p>
+                
+                <div class="grid gap-4">
+                  <!-- Linux -->
+                  <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xl">🐧</span>
+                        <span class="font-medium text-slate-200">Linux (Ubuntu / Debian / Kali)</span>
+                      </div>
+                      <button onclick="copyCmd(this, 'curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-amd64\nchmod +x alphatunnel\nsudo mv alphatunnel /usr/local/bin/')" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded transition">📋 Copy</button>
+                    </div>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto text-emerald-400"><code>curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-amd64
+chmod +x alphatunnel
+sudo mv alphatunnel /usr/local/bin/</code></pre>
+                  </div>
+
+                  <!-- Termux -->
+                  <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xl">📱</span>
+                        <span class="font-medium text-slate-200">Android (Termux)</span>
+                      </div>
+                      <button onclick="copyCmd(this, 'curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-arm64\nchmod +x alphatunnel\nmv alphatunnel $PREFIX/bin/')" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded transition">📋 Copy</button>
+                    </div>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto text-emerald-400"><code>curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-arm64
+chmod +x alphatunnel
+mv alphatunnel $PREFIX/bin/</code></pre>
+                  </div>
+
+                  <!-- Mac M1/M2 -->
+                  <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xl">🍎</span>
+                        <span class="font-medium text-slate-200">macOS (Apple Silicon M1/M2/M3)</span>
+                      </div>
+                      <button onclick="copyCmd(this, 'curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-darwin-arm64\nchmod +x alphatunnel\nsudo mv alphatunnel /usr/local/bin/\nxattr -d com.apple.quarantine /usr/local/bin/alphatunnel')" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded transition">📋 Copy</button>
+                    </div>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto text-emerald-400"><code>curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-darwin-arm64
+chmod +x alphatunnel
+sudo mv alphatunnel /usr/local/bin/
+xattr -d com.apple.quarantine /usr/local/bin/alphatunnel</code></pre>
+                  </div>
+
+                  <!-- Windows -->
+                  <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xl">🪟</span>
+                        <span class="font-medium text-slate-200">Windows (PowerShell)</span>
+                      </div>
+                      <button onclick="copyCmd(this, '$url = &quot;https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-windows-amd64.exe&quot;\n$dir = &quot;$env:LOCALAPPDATA\AlphaTunnel&quot;\nNew-Item -ItemType Directory -Force -Path $dir | Out-Null\nInvoke-WebRequest -Uri $url -OutFile &quot;$dir\alphatunnel.exe&quot; -UseBasicParsing\n$userPath = [Environment]::GetEnvironmentVariable(&quot;Path&quot;, &quot;User&quot;)\nif ($userPath -notlike &quot;*$dir*&quot;) { [Environment]::SetEnvironmentVariable(&quot;Path&quot;, &quot;$userPath;$dir&quot;, &quot;User&quot;) }\nWrite-Host &quot;Installed! Please restart your terminal.&quot;')" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded transition">📋 Copy</button>
+                    </div>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto text-emerald-400"><code>$url = "https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-windows-amd64.exe"
+$dir = "$env:LOCALAPPDATA\AlphaTunnel"
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+Invoke-WebRequest -Uri $url -OutFile "$dir\alphatunnel.exe" -UseBasicParsing
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($userPath -notlike "*$dir*") { [Environment]::SetEnvironmentVariable("Path", "$userPath;$dir", "User") }
+Write-Host "Installed! Please restart your terminal."</code></pre>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <h4 class="font-semibold mb-2 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">2</span>
-                  Start your local server
-                </h4>
-                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code># Python example (port 8000)
-python -m http.server 8000
+              <!-- Step 2 & 3 -->
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <h4 class="font-semibold mb-2 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">2</span>
+                    Start Local Server
+                  </h4>
+                  <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code><span class="text-slate-500"># Example (Python)</span>
+python3 -m http.server 8000</code></pre>
+                </div>
 
-# Node example
-npx serve -l 8000</code></pre>
+                <div>
+                  <h4 class="font-semibold mb-2 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">3</span>
+                    Expose to Public
+                  </h4>
+                  <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code><span class="text-slate-500"># Run this in a new terminal</span>
+alphatunnel release <span class="text-amber-300">8000</span></code></pre>
+                </div>
               </div>
 
-              <div>
-                <h4 class="font-semibold mb-2 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">3</span>
-                  Open the tunnel
-                </h4>
-                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>alphatunnel release <span class="text-amber-300">8000</span></code></pre>
-                <p class="text-xs text-slate-500 mt-1">It will prompt for your username, password, and token.</p>
-              </div>
-
-              <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
-                <p class="text-xs text-emerald-300">✓ Once connected, your local server will be publicly available at <code class="font-mono">https://your-username.alphatunnel.app</code></p>
+              <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4">
+                <p class="text-sm text-emerald-300">✓ Once connected, enter your Username, Password, and Token. Your local server will be live instantly.</p>
               </div>
             </div>
 
@@ -1067,6 +1131,21 @@ var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       // append cache buster so new upload reflects immediately
       return `${publicUrl}?t=${Date.now()}`;
     }
+
+    // কমান্ড কপি করার ফাংশন
+    window.copyCmd = function(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ Copied!';
+        btn.classList.add('bg-emerald-600');
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.classList.remove('bg-emerald-600');
+        }, 2000);
+      }).catch(err => {
+        toast('Copy failed', 'error');
+      });
+    };
   </script>
 </body>
 </html>
