@@ -53,7 +53,6 @@
       border-radius: 50%; animation: spin 0.6s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    /* Prevents long code from breaking layout on mobile */
     pre { white-space: pre-wrap; word-wrap: break-word; }
   </style>
 </head>
@@ -352,22 +351,22 @@
                         <span class="text-lg">🐧</span>
                         <span class="font-medium text-slate-200 text-sm">Linux (Ubuntu / Debian)</span>
                       </div>
-                      <button onclick="copyCmd(this, 'curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-amd64 && chmod +x alphatunnel && sudo mv alphatunnel /usr/local/bin/')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
+                      <button onclick="copyById('cmd-linux')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
                     </div>
-                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code>curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-amd64 && chmod +x alphatunnel && sudo mv alphatunnel /usr/local/bin/</code></pre>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-linux">curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-amd64 && chmod +x alphatunnel && sudo mv alphatunnel /usr/local/bin/</code></pre>
                   </div>
 
-                  <!-- Termux (Special Wrapper Setup) -->
+                  <!-- Termux (Special Wrapper Setup with Cyber UI) -->
                   <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4 ring-1 ring-brand-500/30">
                     <div class="flex justify-between items-center mb-2">
                       <div class="flex items-center gap-2">
                         <span class="text-lg">📱</span>
                         <span class="font-medium text-slate-200 text-sm">Android (Termux)</span>
                       </div>
-                      <button onclick="copyCmd(this, 'pkg install proot -y && curl -L -o $PREFIX/bin/alphatunnel-bin https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-arm64 && chmod +x $PREFIX/bin/alphatunnel-bin && echo -e \'#!/data/data/com.termux/files/usr/bin/bash\\nproot -b $PREFIX/etc/resolv.conf:/etc/resolv.conf $PREFIX/bin/alphatunnel-bin \\\"$@\\\"\' > $PREFIX/bin/alphatunnel && chmod +x $PREFIX/bin/alphatunnel')" class="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
+                      <button onclick="copyById('cmd-termux')" class="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
                     </div>
-                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code>pkg install proot -y && curl -L -o $PREFIX/bin/alphatunnel-bin https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-arm64 && chmod +x $PREFIX/bin/alphatunnel-bin && echo -e '#!/data/data/com.termux/files/usr/bin/bash\nproot -b $PREFIX/etc/resolv.conf:/etc/resolv.conf $PREFIX/bin/alphatunnel-bin "$@"' > $PREFIX/bin/alphatunnel && chmod +x $PREFIX/bin/alphatunnel</code></pre>
-                    <p class="text-[10px] text-slate-400 mt-2">✓ This command automatically sets up the DNS fix. You can just run <code class="text-amber-300">alphatunnel release 8000</code> afterwards.</p>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-termux">bash -c 'clear; echo -e "\e[36m[*] Initializing AlphaTunnel Setup...\e[0m"; sleep 1; echo -e "\e[33m[*] Installing dependencies (proot)...\e[0m"; pkg install proot curl -y >/dev/null 2>&1 & PID=$!; while kill -0 $PID 2>/dev/null; do echo -ne "\e[33m[>] Installing... [|]\r"; sleep 0.1; echo -ne "\e[33m[>] Installing... [/]\r"; sleep 0.1; echo -ne "\e[33m[>] Installing... [-]\r"; sleep 0.1; echo -ne "\e[33m[>] Installing... [\\\\]\r"; sleep 0.1; done; echo -e "\e[32m[+] Dependencies installed!\e[0m"; sleep 1; echo -e "\e[36m[*] Downloading AlphaTunnel (ARM64)...\e[0m"; curl -L -o $PREFIX/bin/alphatunnel-bin https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-arm64 --progress-bar; chmod +x $PREFIX/bin/alphatunnel-bin; echo -e "\e[36m[*] Configuring environment (DNS)...\e[0m"; echo -e "#!/data/data/com.termux/files/usr/bin/bash\nproot -b \$PREFIX/etc/resolv.conf:/etc/resolv.conf \$PREFIX/bin/alphatunnel-bin \"\$@\"" > $PREFIX/bin/alphatunnel; chmod +x $PREFIX/bin/alphatunnel; echo -e "\e[32m[+] Environment configured!\e[0m"; sleep 1; echo -e "\e[32m=============================================\e[0m"; echo -e "\e[32m   AlphaTunnel is ready!\e[0m"; echo -e "\e[32m   Run: alphatunnel release 8000\e[0m"; echo -e "\e[32m=============================================\e[0m"'</code></pre>
+                    <p class="text-[10px] text-slate-400 mt-2">✓ Wait for the setup animation to finish. Afterwards, just run <code class="text-amber-300">alphatunnel release 8000</code></p>
                   </div>
 
                   <!-- Mac M1/M2 -->
@@ -377,9 +376,9 @@
                         <span class="text-lg">🍎</span>
                         <span class="font-medium text-slate-200 text-sm">macOS (Apple Silicon)</span>
                       </div>
-                      <button onclick="copyCmd(this, 'curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-darwin-arm64 && chmod +x alphatunnel && sudo mv alphatunnel /usr/local/bin/ && xattr -d com.apple.quarantine /usr/local/bin/alphatunnel')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
+                      <button onclick="copyById('cmd-mac')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
                     </div>
-                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code>curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-darwin-arm64 && chmod +x alphatunnel && sudo mv alphatunnel /usr/local/bin/ && xattr -d com.apple.quarantine /usr/local/bin/alphatunnel</code></pre>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-mac">curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-darwin-arm64 && chmod +x alphatunnel && sudo mv alphatunnel /usr/local/bin/ && xattr -d com.apple.quarantine /usr/local/bin/alphatunnel</code></pre>
                   </div>
 
                   <!-- Windows -->
@@ -389,9 +388,9 @@
                         <span class="text-lg">🪟</span>
                         <span class="font-medium text-slate-200 text-sm">Windows (PowerShell)</span>
                       </div>
-                      <button onclick="copyCmd(this, '$url = &quot;https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-windows-amd64.exe&quot;\n$dir = &quot;$env:LOCALAPPDATA\AlphaTunnel&quot;\nNew-Item -ItemType Directory -Force -Path $dir | Out-Null\nInvoke-WebRequest -Uri $url -OutFile &quot;$dir\alphatunnel.exe&quot; -UseBasicParsing\n$userPath = [Environment]::GetEnvironmentVariable(&quot;Path&quot;, &quot;User&quot;)\nif ($userPath -notlike &quot;*$dir*&quot;) { [Environment]::SetEnvironmentVariable(&quot;Path&quot;, &quot;$userPath;$dir&quot;, &quot;User&quot;) }\nWrite-Host &quot;Installed! Please restart your terminal.&quot;')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
+                      <button onclick="copyById('cmd-windows')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
                     </div>
-                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code>$url = "https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-windows-amd64.exe"
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-windows">$url = "https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-windows-amd64.exe"
 $dir = "$env:LOCALAPPDATA\AlphaTunnel"
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
 Invoke-WebRequest -Uri $url -OutFile "$dir\alphatunnel.exe" -UseBasicParsing
@@ -840,8 +839,17 @@ void loop() {
       }
     }
 
-    window.copyCmd = function(btn, text) {
-      navigator.clipboard.writeText(text).then(() => {
+    // 🌟 নতুন ফাংশন: আইডি ধরে টেক্সট কপি করা (HTML এস্কেপিং এর ঝামেলা ছাড়া)
+    window.copyById = function(id) {
+      const codeEl = document.getElementById(id);
+      if (!codeEl) return;
+      
+      // innerText ব্যবহার করায় ব্রাউজার অটোমেটিক্যালি HTML এনকোডিং ডিকোড করে নেয়
+      const textToCopy = codeEl.innerText; 
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        // সাকসেস অ্যানিমেশন
+        const btn = codeEl.closest('.bg-slate-900').querySelector('button');
         const original = btn.innerHTML;
         btn.innerHTML = '✅ Copied!';
         btn.classList.add('bg-emerald-600', 'text-white');
@@ -849,7 +857,10 @@ void loop() {
           btn.innerHTML = original;
           btn.classList.remove('bg-emerald-600', 'text-white');
         }, 2000);
-      }).catch(() => toast('Copy failed', 'error'));
+        toast('Copied successfully!', 'success');
+      }).catch(() => {
+        toast('Copy failed. Please select and copy manually.', 'error');
+      });
     };
   </script>
 </body>
