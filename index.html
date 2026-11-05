@@ -340,45 +340,21 @@
               <div>
                 <h4 class="font-semibold mb-3 flex items-center gap-2 text-base sm:text-lg">
                   <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold shrink-0">1</span>
-                  Install the CLI
+                  Install the CLI (One-Liner)
                 </h4>
                 
                 <div class="grid gap-4">
-                  <!-- Linux -->
+                  <!-- Linux & Mac & Termux -->
                   <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4">
                     <div class="flex justify-between items-center mb-2">
                       <div class="flex items-center gap-2">
-                        <span class="text-lg">🐧</span>
-                        <span class="font-medium text-slate-200 text-sm">Linux (Ubuntu / Debian)</span>
+                        <span class="text-lg">🐧 🍎 📱</span>
+                        <span class="font-medium text-slate-200 text-sm">Linux / macOS / Termux</span>
                       </div>
-                      <button onclick="copyById('cmd-linux')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
+                      <button onclick="copyById('cmd-unix')" class="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
                     </div>
-                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-linux">curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-amd64 && chmod +x alphatunnel && sudo mv alphatunnel /usr/local/bin/</code></pre>
-                  </div>
-
-                  <!-- Termux (Special Wrapper Setup with Cyber UI) -->
-                  <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4 ring-1 ring-brand-500/30">
-                    <div class="flex justify-between items-center mb-2">
-                      <div class="flex items-center gap-2">
-                        <span class="text-lg">📱</span>
-                        <span class="font-medium text-slate-200 text-sm">Android (Termux)</span>
-                      </div>
-                      <button onclick="copyById('cmd-termux')" class="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
-                    </div>
-                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-termux">bash -c 'clear; echo -e "\e[36m[*] Initializing AlphaTunnel Setup...\e[0m"; sleep 1; echo -e "\e[33m[*] Installing dependencies (proot)...\e[0m"; pkg install proot curl -y >/dev/null 2>&1 & PID=$!; while kill -0 $PID 2>/dev/null; do echo -ne "\e[33m[>] Installing... [|]\r"; sleep 0.1; echo -ne "\e[33m[>] Installing... [/]\r"; sleep 0.1; echo -ne "\e[33m[>] Installing... [-]\r"; sleep 0.1; echo -ne "\e[33m[>] Installing... [\\\\]\r"; sleep 0.1; done; echo -e "\e[32m[+] Dependencies installed!\e[0m"; sleep 1; echo -e "\e[36m[*] Downloading AlphaTunnel (ARM64)...\e[0m"; curl -L -o $PREFIX/bin/alphatunnel-bin https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-linux-arm64 --progress-bar; chmod +x $PREFIX/bin/alphatunnel-bin; echo -e "\e[36m[*] Configuring environment (DNS)...\e[0m"; echo -e "#!/data/data/com.termux/files/usr/bin/bash\nproot -b \$PREFIX/etc/resolv.conf:/etc/resolv.conf \$PREFIX/bin/alphatunnel-bin \"\$@\"" > $PREFIX/bin/alphatunnel; chmod +x $PREFIX/bin/alphatunnel; echo -e "\e[32m[+] Environment configured!\e[0m"; sleep 1; echo -e "\e[32m=============================================\e[0m"; echo -e "\e[32m   AlphaTunnel is ready!\e[0m"; echo -e "\e[32m   Run: alphatunnel release 8000\e[0m"; echo -e "\e[32m=============================================\e[0m"'</code></pre>
-                    <p class="text-[10px] text-slate-400 mt-2">✓ Wait for the setup animation to finish. Afterwards, just run <code class="text-amber-300">alphatunnel release 8000</code></p>
-                  </div>
-
-                  <!-- Mac M1/M2 -->
-                  <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4">
-                    <div class="flex justify-between items-center mb-2">
-                      <div class="flex items-center gap-2">
-                        <span class="text-lg">🍎</span>
-                        <span class="font-medium text-slate-200 text-sm">macOS (Apple Silicon)</span>
-                      </div>
-                      <button onclick="copyById('cmd-mac')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
-                    </div>
-                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-mac">curl -L -o alphatunnel https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-darwin-arm64 && chmod +x alphatunnel && sudo mv alphatunnel /usr/local/bin/ && xattr -d com.apple.quarantine /usr/local/bin/alphatunnel</code></pre>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-unix">curl -sSL https://alphatunnel.vercel.app/install.sh | bash</code></pre>
+                    <p class="text-[10px] text-slate-400 mt-2">✓ Automatically detects your OS and sets up the environment.</p>
                   </div>
 
                   <!-- Windows -->
@@ -388,15 +364,9 @@
                         <span class="text-lg">🪟</span>
                         <span class="font-medium text-slate-200 text-sm">Windows (PowerShell)</span>
                       </div>
-                      <button onclick="copyById('cmd-windows')" class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
+                      <button onclick="copyById('cmd-windows')" class="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded transition whitespace-nowrap">📋 Copy</button>
                     </div>
-                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-windows">$url = "https://github.com/SaadSikder01/alphatunnel-cli/releases/latest/download/alphatunnel-windows-amd64.exe"
-$dir = "$env:LOCALAPPDATA\AlphaTunnel"
-New-Item -ItemType Directory -Force -Path $dir | Out-Null
-Invoke-WebRequest -Uri $url -OutFile "$dir\alphatunnel.exe" -UseBasicParsing
-$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-if ($userPath -notlike "*$dir*") { [Environment]::SetEnvironmentVariable("Path", "$userPath;$dir", "User") }
-Write-Host "Installed! Please restart your terminal."</code></pre>
+                    <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[10px] sm:text-xs overflow-x-auto text-emerald-400"><code id="cmd-windows">irm https://alphatunnel.vercel.app/install.ps1 | iex</code></pre>
                   </div>
                 </div>
               </div>
@@ -439,10 +409,7 @@ alphatunnel release <span class="text-amber-300">8000</span></code></pre>
                 </h4>
                 <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>// Arduino IDE → Library Manager
 Search: "AlphaTunnel"
-Install: v1.0.0
-
-// Or via .zip
-https://github.com/alphatunnel/esp32/releases</code></pre>
+Install: v1.0.0</code></pre>
               </div>
               <div>
                 <h4 class="font-semibold mb-2 flex items-center gap-2">
@@ -455,24 +422,6 @@ https://github.com/alphatunnel/esp32/releases</code></pre>
 #define ALPHA_PASSWORD "your_password"
 #define ALPHA_TOKEN    "your_token_here"</code></pre>
               </div>
-              <div>
-                <h4 class="font-semibold mb-2 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold">3</span>
-                  Upload & run
-                </h4>
-                <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>#include &lt;AlphaTunnel.h&gt;
-
-void setup() {
-  Serial.begin(115200);
-  AlphaTunnel.begin(WIFI_SSID, WIFI_PASSWORD,
-                    ALPHA_USERNAME, ALPHA_PASSWORD, ALPHA_TOKEN);
-  AlphaTunnel.startLocalServer(80);
-}
-
-void loop() {
-  AlphaTunnel.loop();
-}</code></pre>
-              </div>
             </div>
 
             <!-- Manual Setup -->
@@ -483,19 +432,6 @@ void loop() {
                 <pre class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code>1. Client → Relay: {username, token, "auth-request"}
 2. Relay → Client: {ok: true, public_url}
 3. Relay ↔ Client: bidirectional HTTP/WS frames</code></pre>
-              </div>
-              <div>
-                <h4 class="font-semibold mb-2">Endpoints</h4>
-                <div class="space-y-2 text-sm">
-                  <div class="flex justify-between p-2 rounded bg-slate-950 border border-slate-800">
-                    <span class="text-slate-500">Relay</span>
-                    <code class="text-brand-300 font-mono text-xs">wss://alphatunnel-worker.sikdarabdulla02-9c0.workers.dev/_ws</code>
-                  </div>
-                  <div class="flex justify-between p-2 rounded bg-slate-950 border border-slate-800">
-                    <span class="text-slate-500">Auth</span>
-                    <code class="text-brand-300 font-mono text-xs">POST /auth</code>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -839,16 +775,12 @@ void loop() {
       }
     }
 
-    // 🌟 নতুন ফাংশন: আইডি ধরে টেক্সট কপি করা (HTML এস্কেপিং এর ঝামেলা ছাড়া)
     window.copyById = function(id) {
       const codeEl = document.getElementById(id);
       if (!codeEl) return;
-      
-      // innerText ব্যবহার করায় ব্রাউজার অটোমেটিক্যালি HTML এনকোডিং ডিকোড করে নেয়
       const textToCopy = codeEl.innerText; 
 
       navigator.clipboard.writeText(textToCopy).then(() => {
-        // সাকসেস অ্যানিমেশন
         const btn = codeEl.closest('.bg-slate-900').querySelector('button');
         const original = btn.innerHTML;
         btn.innerHTML = '✅ Copied!';
